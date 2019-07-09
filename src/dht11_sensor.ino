@@ -29,19 +29,33 @@
  */
 
 #include "PietteTech_DHT.h"
-#include "ThingSpeak.h"   // add ThingSpeak library for sending data to the IoT service
+#include "MQTT.h"
 
 #define DHTTYPE  DHT11       // Sensor type DHT11/21/22/AM2301/AM2302
 #define DHTPIN   D2          // Digital pin for communications
 
 int sendDelay = 30000;
 
-TCPClient client;
+TCPClient t_client;
 byte server[] = { 216, 58, 223, 78 }; // Google
 
-// ThingSpeak channel number and write api key
-unsigned int channel_number = 738862;
-const char * write_api_key = "VG9EJ0SCF9EHXHCV";
+void callback(char* topic, byte* payload, unsigned int length);
+MQTT client("ruleblox.com", 1883, callback);
+
+// receive message from MQTT broker
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.println("Command received:");
+}
+
+void connect() {
+  Serial.print("Connecting to Ruleblox");
+  while (!client.isConnected()) {
+    client.connect("rulebloxclient_" + String(Time.now()));
+    if(client.isConnected()) {
+      Serial.println("connected!");
+    }
+  }
+}
 
  /*
   * NOTE: Use of callback_wrapper has been deprecated
@@ -60,27 +74,25 @@ void setup()
   Serial.println("connecting...");
 
   // establish TCP connection
-  if (client.connect(server, 80))
+  if (t_client.connect(server, 80))
   {
     Serial.println("connected");
-    client.println("GET /search?q=unicorn HTTP/1.0");
-    client.println("Host: www.google.com");
-    client.println("Content-Length: 0");
-    client.println();
+    t_client.println("GET /search?q=unicorn HTTP/1.0");
+    t_client.println("Host: www.google.com");
+    t_client.println("Content-Length: 0");
+    t_client.println();
   }
   else
   {
     Serial.println("connection failed");
   }
 
-  // start ThingSpeak client
-  ThingSpeak.begin(client);
-
   while (!Serial.available() && millis() < 30000) {
     Serial.println("Press any key to start.");
     Particle.process();
     delay(1000);
   }
+
   Serial.println("DHT Simple program using DHT.acquireAndWait");
   Serial.print("LIB version: ");
   Serial.println(DHTLIB_VERSION);
@@ -137,27 +149,17 @@ void loop()
     break;
   }
   Serial.print("Humidity (%): ");
-  Serial.println(DHT.getHumidity(), 2);
-  ThingSpeak.setField(2,DHT.getHumidity());
+  Serial.println(DHT.getHumidity());
 
   Serial.print("Temperature (oC): ");
-  Serial.println(DHT.getCelsius(), 2);
-  ThingSpeak.setField(1,DHT.getCelsius());
+  Serial.println(DHT.getCelsius());
 
-  Serial.print("Temperature (oF): ");
-  Serial.println(DHT.getFahrenheit(), 2);
-
-  Serial.print("Temperature (K): ");
-  Serial.println(DHT.getKelvin(), 2);
-
-  Serial.print("Dew Point (oC): ");
-  Serial.println(DHT.getDewPoint());
-
-  Serial.print("Dew Point Slow (oC): ");
-  Serial.println(DHT.getDewPointSlow());
-
-  // send data to ThingSpeak Channel
-  ThingSpeak.writeFields(channel_number, write_api_key);
+  // publish to broker
+  if (!client.isConnected()) {
+    connect();
+    client.publish("sensor/temp", DHT.getCelsius());
+    client.publish("sensor/hum", DHT.getHumidity());
+  }
 
   n++;
   delay(sendDelay);
