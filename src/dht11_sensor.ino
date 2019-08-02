@@ -40,7 +40,7 @@ TCPClient t_client;
 byte server[] = { 216, 58, 223, 78 }; // Google
 
 void callback(char* topic, byte* payload, unsigned int length);
-MQTT client("ruleblox.com", 1883, callback);
+MQTT client("138.197.6.61", 1883, callback);
 
 // receive message from MQTT broker
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -48,7 +48,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void connect() {
-  Serial.print("Connecting to Ruleblox");
+  Serial.println("Connecting to MQTT broker server");
   while (!client.isConnected()) {
     client.connect("rulebloxclient_" + String(Time.now()));
     if(client.isConnected()) {
@@ -149,17 +149,25 @@ void loop()
     break;
   }
   Serial.print("Humidity (%): ");
-  Serial.println(DHT.getHumidity());
+  Serial.println(DHT.getHumidity(), 2);
 
   Serial.print("Temperature (oC): ");
-  Serial.println(DHT.getCelsius());
+  Serial.println(DHT.getCelsius(), 2);
+
+  int celsius_value = DHT.getCelsius();
+  int humdity_value = DHT.getHumidity();
+
+  char buf[8];
+  sprintf(buf, "%0.2f", DHT.getCelsius());
+  const char* celsius_value_string = buf;
 
   // publish to broker
   if (!client.isConnected()) {
     connect();
-    client.publish("sensor/temp", DHT.getCelsius());
-    client.publish("sensor/hum", DHT.getHumidity());
   }
+
+  client.publish("sensor/temp", celsius_value_string);
+  Serial.println(celsius_value_string);
 
   n++;
   delay(sendDelay);
