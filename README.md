@@ -1,8 +1,10 @@
 # Photon DHT11 firmware
 
-Particle photon firmware for DHT11 sensor
+Particle photon firmware for DHT11 sensor.
 
 ![alt text](sketch/photon_dht11_sketch_bb.png "Sketch")
+
+_Project schematic_
 
 ## Welcome to your project!
 
