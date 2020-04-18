@@ -1,6 +1,8 @@
-# dht11_sensor
+# Photon DHT11 firmware
 
-A Particle project named dht11_sensor
+Particle photon firmware for DHT11 sensor
+
+![alt text](sketch/photon_dht11_sketch_bb.png "Sketch")
 
 ## Welcome to your project!
 
