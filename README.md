@@ -4,6 +4,14 @@ Particle photon firmware for DHT11 sensor.
 
 ![alt text](sketch/photon_dht11_sketch_bb.png "Sketch")
 
+
+## libraries
+These are the libraries in use:
+
+ - MQTT: https://github.com/hirotakaster/MQTT
+ - DHT (Piette Tech): https://github.com/eliteio/PietteTech_DHT
+
+
 _Project schematic_
 
 ## Welcome to your project!
@@ -11,7 +19,7 @@ _Project schematic_
 Every new Particle project is composed of 3 important elements that you'll see have been created in your project directory for dht11_sensor.
 
 #### ```/src``` folder:  
-This is the source folder that contains the firmware files for your project. It should *not* be renamed. 
+This is the source folder that contains the firmware files for your project. It should *not* be renamed.
 Anything that is in this folder when you compile your project will be sent to our compile service and compiled into a firmware binary for the Particle device that you have targeted.
 
 If your application contains multiple files, they should all be included in the `src` folder. If your firmware depends on Particle libraries, those dependencies are specified in the `project.properties` file referenced below.
