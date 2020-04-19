@@ -12,6 +12,7 @@ These are the libraries in use:
  - DHT (Piette Tech): https://github.com/eliteio/PietteTech_DHT
 
 
+## Information about Particle
 _Project schematic_
 
 ## Welcome to your project!
