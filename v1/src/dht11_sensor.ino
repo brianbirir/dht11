@@ -36,8 +36,8 @@
 
 int sendDelay = 30000;
 
-TCPClient t_client;
-byte server[] = { 216, 58, 223, 78 }; // Google
+// TCPClient t_client;
+// byte server[] = { 216, 58, 223, 78 };
 
 void callback(char* topic, byte* payload, unsigned int length);
 MQTT client("138.197.6.61", 1883, callback);
@@ -70,22 +70,21 @@ int n;      // counter
 void setup()
 {
   Serial.begin(9600);
-
-  Serial.println("connecting...");
+  // Serial.println("connecting...");
 
   // establish TCP connection
-  if (t_client.connect(server, 80))
-  {
-    Serial.println("connected");
-    t_client.println("GET /search?q=unicorn HTTP/1.0");
-    t_client.println("Host: www.google.com");
-    t_client.println("Content-Length: 0");
-    t_client.println();
-  }
-  else
-  {
-    Serial.println("connection failed");
-  }
+  // if (t_client.connect(server, 80))
+  // {
+  //   Serial.println("connected");
+  //   t_client.println("GET /search?q=unicorn HTTP/1.0");
+  //   t_client.println("Host: www.google.com");
+  //   t_client.println("Content-Length: 0");
+  //   t_client.println();
+  // }
+  // else
+  // {
+  //   Serial.println("connection failed");
+  // }
 
   while (!Serial.available() && millis() < 30000) {
     Serial.println("Press any key to start.");
@@ -162,11 +161,11 @@ void loop()
   const char* celsius_value_string = buf;
 
   // publish to broker
-  if (!client.isConnected()) {
-    connect();
-  }
-
-  client.publish("sensor/temp", celsius_value_string);
+  // if (!client.isConnected()) {
+  //   connect();
+  // }
+  //
+  // client.publish("sensor/temp", celsius_value_string);
   Serial.println(celsius_value_string);
 
   n++;
