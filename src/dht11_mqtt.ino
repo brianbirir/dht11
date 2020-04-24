@@ -27,6 +27,7 @@
 //   https://docs.particle.io/reference/firmware/photon/#attachinterrupt-
 
 #include "PietteTech_DHT.h"
+#include "MQTT.h"
 
  // system defines
 #define DHTTYPE  DHT11              // Sensor type DHT11/21/22/AM2301/AM2302
@@ -50,15 +51,51 @@ void dht_wrapper() {
 bool bDHTstarted;		                // flag to indicate we started acquisition
 int n;                              // counter
 
+// device mac address
+byte mac[6];
+byte server[] = { 138,197,6,61 };
+
+char _mac[13];
+
+
+// MQTT initialization
+void callback(char* topic, byte* payload, unsigned int length);
+MQTT client(server, 3881, callback);
+
+void connect() {
+  Serial.println("Connecting to MQTT broker server");
+  while (!client.isConnected()) {
+    client.connect("rulebloxclient_" + String(Time.now()));
+    if(client.isConnected()) {
+      Serial.println("connected!");
+    }
+  }
+}
+
+// receive feedback or message from MQTT broker
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.println("Command received:");
+}
+
+// disable OTA updates
+int disableOTA(String arg) {
+  System.disableUpdates();
+  return 0;
+}
+
 void setup()
 {
+  Particle.function("disableOTA", disableOTA);
   Serial.begin(9600);
   delay(2000);
   Serial.println("DHT Simple program using DHT.acquire");
   Serial.printlnf("LIB version: %s", (const char*)DHTLIB_VERSION);
   Serial.println("---------------");
-
   DHT.begin();
+
+  // set mac address
+  WiFi.macAddress(mac);
+  sprintf(_mac, "%02x%02x%02x%02x%02x%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5] );
 }
 
 void loop()
@@ -106,12 +143,25 @@ void loop()
         break;
     }
 
-    Serial.printlnf("Humidity (%): %.2f", DHT.getHumidity());
-    Serial.printlnf("Temperature (oC): %.2f", DHT.getCelsius());
-    Serial.printlnf("Temperature (oF): %.2f", DHT.getFahrenheit());
-    Serial.printlnf("Temperature (K): %.2f", DHT.getKelvin());
-    Serial.printlnf("Dew Point (oC): %.2f", DHT.getDewPoint());
-    Serial.printlnf("Dew Point Slow (oC): %.2f", DHT.getDewPointSlow());
+    Serial.printlnf("MAC address is %s", _mac);
+
+    // Serial.printlnf("Humidity (%): %.2f", DHT.getHumidity());
+    // Serial.printlnf("Temperature (oC): %.2f", DHT.getCelsius());
+    // Serial.printlnf("Temperature (oF): %.2f", DHT.getFahrenheit());
+    // Serial.printlnf("Temperature (K): %.2f", DHT.getKelvin());
+    // Serial.printlnf("Dew Point (oC): %.2f", DHT.getDewPoint());
+    // Serial.printlnf("Dew Point Slow (oC): %.2f", DHT.getDewPointSlow());
+
+    char humidity_value[8];
+    sprintf(humidity_value, "%0.2f", DHT.getHumidity());
+    const char* humidity_value_str = humidity_value;
+    Serial.printlnf("Humidity (%): %s", humidity_value_str);
+
+    // publish to broker
+    if (!client.isConnected()) {
+      connect();
+    }
+    client.publish("project/room/device/dht11", humidity_value_str);
 
     n++;
     bDHTstarted = false;  // reset the sample flag so we can take another
